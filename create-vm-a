@@ -1,0 +1,10 @@
+#!/bin/bash
+set -x
+az vm create \
+ --resource-group Test \
+ --name A \
+ --image UbuntuLTS \
+ --admin-username azure \
+ --generate-ssh-keys \
+ --public-ip-address A_Public \
+ --public-ip-address-allocation static

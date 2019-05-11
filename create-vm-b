@@ -1,0 +1,10 @@
+#!/bin/bash
+set -x
+az vm create \
+ --resource-group Test \
+ --name B \
+ --image UbuntuLTS \
+ --vnet-name AVNET \
+ --subnet ASubnet \
+ --admin-username azure \
+ --ssh-key-value ~/.ssh/id_rsa.pub

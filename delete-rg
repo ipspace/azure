@@ -1,0 +1,3 @@
+#!/bin/bash
+set -x
+az group delete --name Test
