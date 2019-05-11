@@ -1,0 +1,13 @@
+#!/bin/bash
+set -x
+#
+# Create application security groups
+#
+az network asg create \
+  --resource-group Test \
+  --name Web-ASG
+#
+az network asg create \
+  --resource-group Test \
+  --name DB-ASG
+#

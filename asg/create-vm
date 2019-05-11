@@ -6,7 +6,7 @@ az vm create \
  --name Web \
  --image UbuntuLTS \
  --vnet-name AppNet \
- --subnet AppSubnet --nsg "" \
+ --subnet AppSubnet --nsg "" --asgs Web-ASG \
  --admin-username azure \
  --ssh-key-value ~/.ssh/id_rsa.pub \
  --public-ip-address Public_Web
@@ -16,7 +16,7 @@ az vm create \
  --name DB \
  --image UbuntuLTS \
  --vnet-name AppNet \
- --subnet DBNet --nsg "" \
+ --subnet DBNet --nsg "" --asgs DB-ASG \
  --admin-username azure \
  --ssh-key-value ~/.ssh/id_rsa.pub \
  --public-ip-address "" 
