@@ -1,0 +1,22 @@
+#!/bin/bash
+set -x
+#
+az vm create \
+ --resource-group Test \
+ --name Web \
+ --image UbuntuLTS \
+ --vnet-name AppNet \
+ --subnet AppSubnet \
+ --admin-username azure \
+ --ssh-key-value ~/.ssh/id_rsa.pub \
+ --public-ip-address Public_Web 
+#
+az vm create \
+ --resource-group Test \
+ --name DB \
+ --image UbuntuLTS \
+ --vnet-name AppNet \
+ --subnet DBNet \
+ --admin-username azure \
+ --ssh-key-value ~/.ssh/id_rsa.pub \
+ --public-ip-address "" 
