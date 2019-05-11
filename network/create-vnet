@@ -1,0 +1,19 @@
+#!/bin/bash
+set -x
+#
+# Create VNet and first subnet
+#
+az network vnet create \
+  --resource-group Test \
+  --name AppNet \
+  --address-prefixes 172.16.0.0/16 \
+  --subnet-name AppSubnet \
+  --subnet-prefixes 172.16.1.0/24
+#
+# Create second subnet
+#
+az network vnet subnet create \
+  --resource-group Test \
+  --vnet-name AppNet \
+  --name DBNet \
+  --address-prefixes 172.16.2.0/24
