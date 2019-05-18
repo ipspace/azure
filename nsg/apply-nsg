@@ -1,12 +1,15 @@
 #!/bin/bash
+RG=`cat ~/.rg 2>/dev/null`
+RG=${RG:-Test}
+echo "Apply NSG to resource group $RG"
 set -x
 #
 # Apply NSG to subnets
 #
 az network vnet subnet update \
-  --resource-group Test --vnet-name AppNet --name DBNet \
+  --resource-group $RG --vnet-name AppNet --name DBNet \
   --network-security-group "DB-NSG"
 #
 az network vnet subnet update \
-  --resource-group Test --vnet-name AppNet --name AppSubnet \
+  --resource-group $RG --vnet-name AppNet --name AppSubnet \
   --network-security-group "Web-NSG"
