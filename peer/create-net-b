@@ -10,6 +10,12 @@ set -x
 az network vnet create \
   --resource-group $RG \
   --name Net-B \
-  --address-prefixes 172.17.0.0/16 \
-  --subnet-name B1 \
-  --subnet-prefixes 172.17.7.0/24
+  --address-prefixes 172.17.0.0/16 
+#
+# Create first subnet
+#
+az network vnet subnet create \
+  --resource-group $RG \
+  --vnet-name Net-B \
+  --name B1 \
+  --address-prefixes 172.17.7.0/24

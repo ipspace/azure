@@ -10,9 +10,15 @@ set -x
 az network vnet create \
   --resource-group $RG \
   --name Net-A \
-  --address-prefixes 172.16.0.0/16 \
-  --subnet-name A1 \
-  --subnet-prefixes 172.16.1.0/24
+  --address-prefixes 172.16.0.0/16 
+#
+# Create first subnet
+#
+az network vnet subnet create \
+  --resource-group $RG \
+  --vnet-name Net-A \
+  --name A1 \
+  --address-prefixes 172.16.1.0/24
 #
 # Create second subnet
 #
