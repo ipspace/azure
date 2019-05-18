@@ -129,3 +129,49 @@ Display routing tables in DBNet
 ```
 az network nic show-effective-route-table -g Net -n DBVMNic -o table
 ```
+
+## Peering demo
+
+```
+setup/create-rg peer
+peer/create-net-a
+peer/create-net-b
+peer/create-vm
+```
+
+Display private and public VM IP
+
+```
+az network nic list -g peer --query "[ [*].name,[*].ipConfigurations[*].privateIpAddress ]" -o table
+az vm list -g peer -d -o table
+```
+
+Log into A1, try to ping A2 and B1
+
+### Create network peering
+
+```
+peer/create-peer
+az network vnet peering list -g peer --vnet-name Net-A -o table
+```
+
+Log into A1, try to ping A2 and B1
+
+### Troubleshooting
+
+```
+az network nic show-effective-route-table -g peer -n A1VMNic -o table
+az network nic show-effective-route-table -g peer -n B1VMNic -o table
+az network nic list-effective-nsg -g peer -n A1VMNic
+az network nic list-effective-nsg -g peer -n B1VMNic
+az network vnet peering show --name A2B --vnet-name Net-A --resource-group peer
+```
+
+### Enable virtual network access
+
+```
+az network vnet peering update --name A2B --vnet-name Net-A --set allowVirtualNetworkAccess=true --resource-group peer
+az network nic list-effective-nsg -g peer -n A1VMNic
+az network nic list-effective-nsg -g peer -n B1VMNic
+az network vnet peering update --name B2A --vnet-name Net-B --set allowVirtualNetworkAccess=true --resource-group peer
+```
