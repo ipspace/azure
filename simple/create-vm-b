@@ -6,7 +6,7 @@ echo "Creating VM B with default settings in resource group $RG"
 set -x
 #
 az vm create \
- --resource-group Test \
+ --resource-group $RG \
  --name B \
  --image UbuntuLTS \
  --admin-username azure \
