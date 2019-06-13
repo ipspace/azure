@@ -9,6 +9,6 @@ az vm create \
  --name A \
  --image UbuntuLTS \
  --admin-username azure \
- --generate-ssh-keys \
  --public-ip-address A_Public \
- --public-ip-address-allocation static
+ --public-ip-address-allocation static \
+ --ssh-key-value ~/.ssh/id_rsa.pub
