@@ -23,7 +23,7 @@ az vm create \
  --name DB \
  --image UbuntuLTS \
  --vnet-name AppNet \
- --subnet DBNet \
+ --subnet DBSubnet \
  --admin-username azure \
  --ssh-key-value ~/.ssh/id_rsa.pub \
  --public-ip-address "$1" 

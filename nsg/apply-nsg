@@ -7,7 +7,7 @@ set -x
 # Apply NSG to subnets
 #
 az network vnet subnet update \
-  --resource-group $RG --vnet-name AppNet --name DBNet \
+  --resource-group $RG --vnet-name AppNet --name DBSubnet \
   --network-security-group "DB-NSG"
 #
 az network vnet subnet update \

@@ -1,7 +1,7 @@
 #!/bin/bash
 RG=`cat ~/.rg 2>/dev/null`
 RG=${RG:-Test}
-echo "Apply route-table Private to DBNet in resource group $RG"
+echo "Apply route-table Private to DBSubnet in resource group $RG"
 #
 set -x
 #
@@ -9,5 +9,5 @@ set -x
 #
 az network vnet subnet update \
   --resource-group $RG \
-  --vnet-name AppNet --name DBNet \
+  --vnet-name AppNet --name DBSubnet \
   --route-table Private
