@@ -1,25 +1,53 @@
 # Azure Workshop Demo Script
 
-This demo script lists the commands used in Azure Networking Workshop demos.
+This demo script contains short descriptions of demos used in [Microsoft Azure Networking Workshop](https://www.ipspace.net/Microsoft_Azure_Networking_(Workshop)) and [webinar](https://www.ipspace.net/Microsoft_Azure_Networking).
 
-## Create a resource group and start a VM
+You will need an Azure subscription (account) to work through them.
 
-* Login into shell.azure.vm
+## Prepare the environment
+
+* Start Azure shell by opening a browser window and logging shell.azure.vm
+* Create a set of SSH keys with **ssh-keygen**
+* Clone the demo repository with **git clone https://github.com/ipspace/azure**
+* Change working directory to **azure**
+* Log into Azure (if needed) with **az login** and configure Azure CLI with **az configure**
+
+## List the available Azure locations
 
 ```
 simple/list-locations
-setup/create-rg Simple
-simple/create-vm-a
-ssh azure@...
 ```
 
-## Create another VM in the same subnet
+The script executes **az account list-locations** command. You can execute various versions of this command, for example using **-o table** option to create a table output.
+
+## Create a resource group and start a VM
+
+The first demo creates a resource group in East US location (hardcoded in the script) and starts a VM to demonstrate the variety of objects needed to support a single VM. Note that all those objects are created automatically.
+
+The **create-rg** script creates a resource group and saves the resource group name into **~/.rg** file. All subsequent scripts read the resource group name from that file.
+
+```
+setup/create-rg Simple
+simple/create-vm-a
+```
+
+After the VM is created, the Azure CLI prints a JSON object describing the VM. Find the public IP address in that data and log into the VM using **ssh azure@public-ip-address**. Use [Azure Portal](https://portal.azure.com/#home) to explore various objects created to support the VM.
+
+Note: You can also use **. setup/get-public vm-name** command (for example, **. setup/get-public A**) to get the public IP address of a VM from Azure and set a corresponding *bash* environment variable (that's why you need . in front of the command). After using the above command you could SSH into A using **ssh azure@$A**.
+
+### Create another VM in the same subnet
+
+Create the second VM in the same resorce group:
 
 ```
 simple/create-vm-b
 ```
 
-### Cleanup
+Note that while Azure CLI created a new VM, new disk, new public IP address, and new network security group (NSG) it did not create a new virtual network (VNet) or subnet.
+
+## Cleanup
+
+Destroy all objects used in this demo by deleting the resource group with **delete-rg** script or  with **az group delete** command.
 
 ```
 setup/delete-rg
@@ -27,15 +55,21 @@ setup/delete-rg
 
 ## Create application environments with two subnets
 
+This demo creates:
+
+* A new resource group
+* Virtual network *AppNet* with IP address space 172.16.0.0/16 and two subnets: *AppSubnet* (172.16.1.0/24) and *DBSubnet*
+* Create a virtual machine in each subnet.
+
 ```
 setup/create-rg Net
 network/create-vnet
 network/create-vm
-ssh azure@...
-setup/delete-rg
 ```
 
-### Cleanup
+After the virtual machines have been created you can log into the *Web* virtual machine but not in the *DB* virtual machine as it has no permanent public IP address. You can, however, ping the private IP address of *DB* virtual machine from *Web* virtual machine, or reach external destinations from *DB* over TCP or UDP (use **curl** or **wget** from DB to download a few public web pages).
+
+Don't forget to clean up afterwards:
 
 ```
 setup/delete-rg
@@ -43,37 +77,53 @@ setup/delete-rg
 
 ## Create Network Security Groups
 
+This demo creates:
+
+* Virtual network *AppNet* with the same subnets as the previous demo
+* Unprotected VMs in the virtual network (with no per-VM Network Security Group). *Web* VM is reachable from the Internet, *DB* VM has no public IP address and is thus reachable only from within the virtual network
+
 ```
 setup/create-rg NSG
 network/create-vnet
 nsg/create-vm
+```
+
+After creating the virtual machines, log into the *Web* VM and verify that you can ping *DB* VM and reach it over SSH (you won't be able to log in unless you fix the SSH keys)
+
+Next, create *Web* and *DB* Network Security Groups and apply them to the *Web* and *DB* subnets:
+
+```
 nsg/create-web-nsg
 nsg/create-db-nsg
-az network nsg list -o table
-az network nsg rule list -g NSG --nsg-name Web-NSG -o table
-az network nsg rule list -g NSG --nsg-name Web-NSG -o table --include-default
-ssh azure@...
 nsg/apply-nsg
 ```
 
+Use **az network nsg list -o table** command to list the contents of the newly-created NSG.
+
 ### Test NSG
 
+Log into *Web* VM and check whether you can reach *DB* VM over SSH, ping, or TCP port 80 (using **curl http://db** or **telnet db 80**). Please note that when the attempts to connect to web server on port 80 return an error it's generated by the host (because there's no web server running on the host) not by the Azure virtual network (which quietly drops the packets).
+
+If your NSG doesn't work as expected use the following commands to figure out what the problem might be:
+
 ```
-scp ../.ssh/id_rsa azure@...:.ssh/
-ssh azure@...
-ssh azure@DB
+az network nsg rule list -g NSG --nsg-name Web-NSG -o table
+az network nsg rule list -g NSG --nsg-name Web-NSG -o table --include-default
 ```
 
-Remove SSH entry from DB-NSG using portal. Recheck with SSH
+Remove SSH entry from DB-NSG using portal. Recheck the connectivity with SSH.
+
+### Fixing the NSG
+
+If you can't fix the NSG for the *DB* subnet yourself, use this command to fix it:
 
 ```
 nsg/fix-db-nsg
-ssh azure@DB
-telnet DB 3306
-telnet DB 3300
 ```
 
 ### Cleanup
+
+Don't forget to delete the resource group after completing the demo.
 
 ```
 setup/delete-rg
