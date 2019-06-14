@@ -20,6 +20,8 @@ simple/list-locations
 
 The script executes **az account list-locations** command. You can execute various versions of this command, for example using **-o table** option to create a table output.
 
+Note: all demos use scripts with one or several **az** commands. The first command in every script enables bash command tracing so you'll be able to see the exact commands being executed.
+
 ## Create a resource group and start a VM
 
 The first demo creates a resource group in East US location (hardcoded in the script) and starts a VM to demonstrate the variety of objects needed to support a single VM. Note that all those objects are created automatically.
@@ -131,56 +133,87 @@ setup/delete-rg
 
 ## Application Security Groups Demo
 
+In the Application Security Groups (ASG) demo we'll repeat the steps from the NSG demo but replace the subnet prefixes used in previous demo with ASG objects. The initial steps are almost identical to the previous demo:
+
+* Create a resource group;
+* Create a virtual network with two subnets;
+* Create an application security group (ASG);
+* Create two VMs (one in each ASG)
+
 ```
 setup/create-rg ASG
 network/create-vnet
 asg/create-asg
 asg/create-vm
+```
+
+When creating NSG rules we'll use ASG objects instead of subnet prefixes:
+
+```
 asg/create-db-nsg
 asg/create-web-nsg
-ssh azure@...
 nsg/apply-nsg
-az network nic list-effective-nsg -g ASG -n DBVMNic
+```
+
+After setting up the demo, connect to *Web* VM and explore which TCP ports on *DB* VM you can reach. Also, try to figure out which IP addresses belong to a particular ASG (**az network nic list-effective-nsg -g ASG -n DBVMNic** doesn't seem to return usable information).
+
+Don't forget to delete the resource group after completing the demo.
+
+```
+setup/delete-rg
 ```
 
 ## Route table demo
+
+This demo will replace the default route table in database subnet with a custom route table where the system default route (pointing to Internet) is replaced with a custom default route with *drop* next hop (effectively blocking Internet access for *DB* VM).
+
+We'll reuse the steps from virtual networking demo to create the virtual network, the two subnets, and the *DB* and *Web* VMs.
 
 ```
 setup/create-rg rt
 network/create-vnet
 network/create-vm
-ssh azure@...
-scp /home/ivan/.ssh/id_rsa azure@40.121.111.118:.ssh/
 ```
 
-Test outbound Internet connectivity from DB
+To test the outbound connectivity from *DB* VM you have to be able to log into it, and you can only do it from the *Web* VM, so you have to copy your private SSH key to the *Web* VM (never do that in production).
 
 ```
-ssh azure@...
-A> ssh azure@172.16.2.4
-B> curl www.example.com
+. setup/get-public Web
+scp ~/.ssh/id_rsa azure@$Web:.ssh/
 ```
 
-Display routing tables in DBNet
+Now you can use *Web* VM as a SSH jump host to get to the *DB* VM and test outbound Internet connectivity.
+
+```
+ssh azure@$Web
+Web> ssh azure@172.16.2.4
+DB> curl www.example.com
+```
+
+You can display routing table in *DBSubnet* to verify that it includes the default route pointing toward the Internet.
 
 ```
 az network nic show-effective-route-table -g Net -n DBVMNic -o table
 ```
 
-Create a custom route table
+Next, create a custom route table and apply it to *DBSubnet*
 
 ```
 rt/create-rt
 rt/apply-rt
 ```
 
-Display routing tables in DBNet
+Check whether the routing table applied to *DBVMNic* has been modified:
 
 ```
 az network nic show-effective-route-table -g Net -n DBVMNic -o table
 ```
 
+Finally, log into *DB* VM and try to fetch a web page from the public Internet.
+
 ## Peering demo
+
+In the VNet Peering demo we'll create two virtual networks and three VMs (two in network A, one in network B).
 
 ```
 setup/create-rg peer
@@ -189,39 +222,58 @@ peer/create-net-b
 peer/create-vm
 ```
 
-Display private and public VM IP
+Display private and public VM IP address with these commands:
 
 ```
 az network nic list -g peer --query "[ [*].name,[*].ipConfigurations[*].privateIpAddress ]" -o table
 az vm list -g peer -d -o table
 ```
 
-Log into A1, try to ping A2 and B1
+Log into A1, try to ping A2 and B1. You should be able to ping A2, but not B1.
 
 ### Create network peering
+
+Use these commands to create and verify VNet peering between A and B.
 
 ```
 peer/create-peer
 az network vnet peering list -g peer --vnet-name Net-A -o table
+az network vnet peering show --name A2B --vnet-name Net-A --resource-group peer
 ```
 
-Log into A1, try to ping A2 and B1
+Log into A1, try to ping A2 and B1. You should not be able to ping B1 even though the VNet peering has been successfully established.
 
 ### Troubleshooting
+
+Check the routing tables on A1 and B1 NICs:
 
 ```
 az network nic show-effective-route-table -g peer -n A1VMNic -o table
 az network nic show-effective-route-table -g peer -n B1VMNic -o table
+```
+
+You'll notice that the routing tables include prefixes from the peered network. Try to figure out why the traffic is not exchanged between A1 and B1 (for example, using *IP Flow Verify* feature in GUI portal).
+
+Check the effective NSG applied to VM NICs, in particular the actual prefixes used in packet filters. You'll notice that the *VirtualNetwork* service tag does not include prefixes from the peered virtual network.
+
+```
 az network nic list-effective-nsg -g peer -n A1VMNic
 az network nic list-effective-nsg -g peer -n B1VMNic
-az network vnet peering show --name A2B --vnet-name Net-A --resource-group peer
 ```
 
 ### Enable virtual network access
 
+Fix the NSG by setting the *allowVirtualNetworkAccess* flag on VNet peering.
+
 ```
 az network vnet peering update --name A2B --vnet-name Net-A --set allowVirtualNetworkAccess=true --resource-group peer
+az network vnet peering update --name B2A --vnet-name Net-B --set allowVirtualNetworkAccess=true --resource-group peer
 az network nic list-effective-nsg -g peer -n A1VMNic
 az network nic list-effective-nsg -g peer -n B1VMNic
-az network vnet peering update --name B2A --vnet-name Net-B --set allowVirtualNetworkAccess=true --resource-group peer
 ```
+
+You might want to change the flag on one side of the peering and check effective NSG on VM NIC before changing the flag on the other side of the peering.
+
+## Cleanup
+
+Congratulations, you completed the last demo. Don't forget to clean up all resources and resource groups you created - Microsoft will happily bill you if you keep them running.
