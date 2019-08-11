@@ -14,7 +14,7 @@ az network route-table create \
 # Create discard default route
 #
 az network route-table route create \
-  --resource-group Net \
+  --resource-group $RG \
   --route-table-name Private \
   --name DropDefault \
   --address-prefix "0.0.0.0/0" --next-hop-type None
