@@ -16,7 +16,7 @@ az vm create \
  --subnet AppSubnet \
  --admin-username azure \
  --ssh-key-value ~/.ssh/id_rsa.pub \
- --public-ip-address Public_Web 
+ --public-ip-address Public_Web
 #
 az vm create \
  --resource-group $RG \
@@ -26,4 +26,4 @@ az vm create \
  --subnet DBSubnet \
  --admin-username azure \
  --ssh-key-value ~/.ssh/id_rsa.pub \
- --public-ip-address "$1" 
+ --public-ip-address "$1"

@@ -109,8 +109,9 @@ Log into *Web* VM and check whether you can reach *DB* VM over SSH, ping, or TCP
 If your NSG doesn't work as expected use the following commands to figure out what the problem might be:
 
 ```
-az network nsg rule list -g NSG --nsg-name Web-NSG -o table
-az network nsg rule list -g NSG --nsg-name Web-NSG -o table --include-default
+az network nsg rule list -g NSG --nsg-name DB-NSG -o table
+az network nic list-effective-nsg --resource-group NSG --name DBVMNic -o table
+az network nsg rule list -g NSG --nsg-name DB-NSG -o table --include-default
 ```
 
 Remove SSH entry from DB-NSG using portal. Recheck the connectivity with SSH.
@@ -193,7 +194,7 @@ DB> curl www.example.com
 You can display routing table in *DBSubnet* to verify that it includes the default route pointing toward the Internet.
 
 ```
-az network nic show-effective-route-table -g Net -n DBVMNic -o table
+az network nic show-effective-route-table -g rt -n DBVMNic -o table
 ```
 
 Next, create a custom route table and apply it to *DBSubnet*
