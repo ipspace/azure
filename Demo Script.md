@@ -6,7 +6,7 @@ You will need an Azure subscription (account) to work through them.
 
 ## Prepare the environment
 
-* Start Azure shell by opening a browser window and logging https://shell.azure.com/
+* Start Azure shell by opening a browser window and logging into https://shell.azure.com/
 * Create a set of SSH keys with **ssh-keygen**
 * Clone the demo repository with **git clone https://github.com/ipspace/azure**
 * Change working directory to **azure**
