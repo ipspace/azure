@@ -1,12 +1,14 @@
 # Azure Workshop Demo Script
 
-This demo script contains short descriptions of demos used in [Microsoft Azure Networking Workshop](https://www.ipspace.net/Microsoft_Azure_Networking_(Workshop)) and [webinar](https://www.ipspace.net/Microsoft_Azure_Networking).
+This repository contains demos used in [Microsoft Azure Networking Workshop](https://www.ipspace.net/Microsoft_Azure_Networking_(Workshop)) and [webinar](https://www.ipspace.net/Microsoft_Azure_Networking).
 
 You will need an Azure subscription (account) to work through them.
 
+To recreate the demos, follow this script:
+
 ## Prepare the environment
 
-* Start Azure shell by opening a browser window and logging into https://shell.azure.com/
+* Start Azure shell by opening a browser window and logging into [online Azure shell](https://shell.azure.com/)
 * Create a set of SSH keys with **ssh-keygen**
 * Clone the demo repository with **git clone https://github.com/ipspace/azure**
 * Change working directory to **azure**
